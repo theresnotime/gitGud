@@ -3,6 +3,7 @@ $global:inDevelopment = @(
     'BetaCluster'
 );
 
+$global:version = "0.0.2";
 $global:mwDir = "A:\wikimedia\mediawiki-local\";
 $global:extensionsDir = $(Get-Item -Path "${mwDir}extensions\");
 $global:allExtensions = $(Get-ChildItem $extensionsDir);
@@ -143,11 +144,13 @@ function gitGud(
     [boolean]$mwpull = $true,
     [boolean]$sync = $true
 ) {
+    Write-Host "gitGud v${global:version}";
+
     if($help) {
-        Write-Host "Usage: gitGud [-tidy] [-dryrun] [-checkout] <-repo=name> <-mwpull=$false> <-sync=$false>";
+        Write-Host "Usage: gitGud [ -tidy ] [ -dryrun ] [ -checkout ] < -repo=name > < -mwpull=$false > < -sync=$false >";
         return;
     }
-    Write-Host "gitGud v0.0.1";
+    
     Write-Host -NoNewline "Settings: ";
     if($dryrun) {
         setGlobal -global dryrun -value $true;
@@ -184,7 +187,7 @@ function gitGud(
     Write-Host "`n";
 
     if($mwpull) {
-        if($dryrun) {
+        if($global:dryrun) {
             Write-Host "[dry] Updating MediaWiki core...";
         } else {
             Write-Host "Updating MediaWiki core...";
@@ -203,7 +206,7 @@ function gitGud(
         }
         
         if($extDir.PSIsContainer) {
-            if($dryrun) {
+            if($global:dryrun) {
                 Write-Host "[dry] Checking ${ext}...";
             } else {
                 Write-Host "Checking ${ext}...";
@@ -225,7 +228,7 @@ function gitGud(
             }
             
             if($extDir.PSIsContainer) {
-                if($dryrun) {
+                if($global:dryrun) {
                     Write-Host "[dry] Checking ${ext}...";
                 } else {
                     Write-Host "Checking ${ext}...";
@@ -237,12 +240,13 @@ function gitGud(
             }
         }
     }
+
     if($global:dryrun -eq $false) {
         runComposer -dir $global:mwDir;
         runNPM -dir $global:mwDir;
         mwScript -script "${global:mwDir}maintenance\update.php" -opts "--quick"; 
     } else {
-        Write-Host "[dry] Skipping composer, npm etc..";
+        Write-Host "[dry] Skipping composer, npm etc..`n";
     }
     
     Write-Host "Done!";
